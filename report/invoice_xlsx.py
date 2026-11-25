@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import unicodedata
 from collections import OrderedDict, defaultdict
 
 from odoo import models
@@ -25,6 +26,14 @@ MAX_COL = 16383  # última columna de Excel (XFD)
 # Fila (base 0) de la cabecera de la tabla.
 # Filas 0 y 1: Empresa / Fechas. Fila 2: separador en blanco.
 HEADER_ROW = 3
+
+
+def _strip_accents(text):
+    """Quita acentos pero conserva ñ/Ñ: 'Ángel Muñoz' -> 'Angel Muñoz'."""
+    text = (text or '').replace('ñ', '\x00a').replace('Ñ', '\x00b')
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+    return text.replace('\x00a', 'ñ').replace('\x00b', 'Ñ')
 
 
 class MotsoftInvoiceXlsx(models.AbstractModel):
@@ -132,15 +141,21 @@ class MotsoftInvoiceXlsx(models.AbstractModel):
         groups = OrderedDict()
         for m in moves:
             partner = m.commercial_partner_id
+
             g = groups.setdefault(partner.id, {
                 'vat': partner.vat,
-                'name': partner.display_name or 'Sin Contacto',
+                'name': _strip_accents(partner.display_name) or 'Sin Contacto',
                 'invoices': [],
                 'refunds': [],
             })
+
             p = prepared[m.id]
             g['refunds' if p['is_refund'] else 'invoices'].append(p)
-        ordered_groups = sorted(groups.values(), key=lambda g: g['name'].casefold())
+
+        ordered_groups = sorted(
+            groups.values(),
+            key=lambda g: (_strip_accents(g['name']).casefold(), g['name']))
+
         for g in ordered_groups:
             g['invoices'].sort(key=lambda p: (p['name'], p['id']))
             g['refunds'].sort(key=lambda p: (p['name'], p['id']))
