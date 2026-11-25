@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- binding_type="report" => aparece en el menú "Imprimir" de la vista lista/formulario -->
+    <record id="action_report_invoice_xlsx" model="ir.actions.report">
+        <field name="name">Facturas por Contacto (XLSX)</field>
+        <field name="model">account.move</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">motsoft_invoice_xlsx.report_invoice_xlsx</field>
+        <field name="report_file">motsoft_invoice_xlsx.report_invoice_xlsx</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
