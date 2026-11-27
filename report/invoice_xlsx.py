@@ -143,7 +143,7 @@ class MotsoftInvoiceXlsx(models.AbstractModel):
             partner = m.commercial_partner_id
 
             g = groups.setdefault(partner.id, {
-                'vat': partner.vat,
+                'vat': partner.vat or 'Sin CIF',
                 'name': _strip_accents(partner.display_name) or 'Sin Contacto',
                 'invoices': [],
                 'refunds': [],
@@ -247,10 +247,7 @@ class MotsoftInvoiceXlsx(models.AbstractModel):
         for g in ordered_groups:
             invoices, refunds = g['invoices'], g['refunds']
 
-            if g['vat']:
-                ws.write_string(r, 0, g['vat'], f_partner)
-            else:
-                ws.write_string(r, 0, 'Sin CIF', f_partner)
+            ws.write_string(r, 0, g['vat'], f_partner)
 
             r += 1
             ws.write_string(r, 0, g['name'], f_partner)
