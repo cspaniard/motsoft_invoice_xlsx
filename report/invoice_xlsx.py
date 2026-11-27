@@ -272,7 +272,7 @@ class MotsoftInvoiceXlsx(models.AbstractModel):
 
             if refunds:
                 r += 1
-                ws.write_string(r, 0, 'Rectificativas', f_section)
+                ws.write_string(r, 0, f'Rectificativas {g["name"] or ""}', f_section)
                 r += 1
                 first = r
                 for p in refunds:
